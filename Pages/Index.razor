@@ -1,0 +1,43 @@
+﻿@page "/"
+@using Microsoft.JSInterop
+@inject IJSRuntime JSR
+
+<p>DBJ (JavaScript Since 2001) JavaScript Micropreter&trade;</p>
+<textarea @bind="code" rows="12" cols="80" style="width:90%"></textarea>
+<br />
+<button @onclick="Execute">Execute</button>
+<hr />
+<p>The Result:</p>
+<pre id="rezult" style="width:90%">@result</pre>
+<pre style="width:90%">@error_msg</pre>
+
+@code {
+    private string code = "";
+    private string result = "";
+    private string error_msg = "";
+
+    private async Task Execute()
+    {
+        try
+        {
+            string the_code = string.Format("document.getElementById(\"rezult\").innerHTML += '<br/>' + eval('{0};')"
+            , code.Trim());
+
+            await JSR.InvokeVoidAsync("eval", the_code);
+        }
+        catch (JSException jx)
+        {
+            string errorMessage = jx.ToString();
+            string[] lines = errorMessage.Split('\n');
+            if (lines.Length > 0)
+            {
+                errorMessage = lines[0];
+            }
+            error_msg = errorMessage;
+        }
+        catch (Exception ex)
+        {
+            error_msg = ex.Message;
+        }
+    }
+}
